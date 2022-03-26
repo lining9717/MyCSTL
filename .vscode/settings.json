@@ -1,6 +1,0 @@
-{
-    "files.associations": {
-        "cstl_common.h": "c",
-        "*.tcc": "cpp"
-    }
-}
