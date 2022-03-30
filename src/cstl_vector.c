@@ -35,8 +35,7 @@ static State expand_capacity(Vector *vec)
     if (!new_buffer)
         return CSTL_ERR_ALLOC;
 
-    memcpy_s(new_buffer, new_capacity * sizeof(void *),
-             vec->buffer, vec->size * sizeof(void *));
+    memcpy(new_buffer, vec->buffer, vec->size * sizeof(void *));
 
     vec->mem_free(vec->buffer);
     vec->buffer = new_buffer;
@@ -154,7 +153,7 @@ void cstl_vector_destory_cb(Vector *vec, void (*cb)(void *))
  *               CSTL_ERR_ALLOC代表分配新内存失败；
  *               CSTL_ERR_MAX_CAPACITY代表容量超出最大值
  */
-State cstl_vector_add(Vector *vec, void *element)
+State cstl_vector_push_back(Vector *vec, void *element)
 {
     if (vec->size >= vec->capacity)
     {
@@ -180,12 +179,12 @@ State cstl_vector_add(Vector *vec, void *element)
  *               CSTL_ERR_MAX_CAPACITY代表容量超出最大值；
  *               CSTL_ERR_OUT_OF_RANGE代表插入元素的位置不在范围之内
  */
-State cstl_vector_add_at(Vector *vec, void *element, size_t index)
+State cstl_vector_push_at(Vector *vec, void *element, size_t index)
 {
     if (index == vec->size)
-        return cstl_vector_add(vec, element);
+        return cstl_vector_push_back(vec, element);
 
-    if ((vec->size == 0 && index != 0) || index < 0 || index > vec->size)
+    if ((vec->size == 0 && index != 0) || index > vec->size)
         return CSTL_ERR_OUT_OF_RANGE;
 
     if (vec->size >= vec->capacity)
@@ -216,7 +215,7 @@ State cstl_vector_add_at(Vector *vec, void *element, size_t index)
  */
 State cstl_vector_replace_at(Vector *vec, void *element, size_t index, void **out)
 {
-    if (index < 0 || index >= vec->size)
+    if (index >= vec->size)
         return CSTL_ERR_OUT_OF_RANGE;
     if (out)
         *out = vec->buffer[index];
@@ -235,7 +234,7 @@ State cstl_vector_replace_at(Vector *vec, void *element, size_t index, void **ou
 State cstl_vector_swap_at(Vector *vec, size_t index1, size_t index2)
 {
     void *tmp;
-    if (index1 < 0 || index1 >= vec->size || index2 < 0 || index2 >= vec->size)
+    if (index1 >= vec->size || index2 >= vec->size)
         return CSTL_ERR_OUT_OF_RANGE;
 
     tmp = vec->buffer[index1];
@@ -244,20 +243,149 @@ State cstl_vector_swap_at(Vector *vec, size_t index1, size_t index2)
     return CSTL_OK;
 }
 
-State cstl_vector_remove(Vector *vec, void *element, void **out)
+/**
+ * @brief 获取Vector中位于index位置的元素并返回其值。index应位于数组范围之内
+ *
+ * @param vec
+ * @param index
+ * @return void* 指向元素的指针
+ */
+void *cstl_vector_at(Vector *vec, size_t index)
 {
-
+    if (index >= vec->size)
+        return NULL;
+    return vec->buffer[index];
 }
 
-State cstl_vector_remove_at(Vector *vec, size_t index, void **out)
+/**
+ * @brief 获取Vector的最后一个元素
+ *
+ * @param vec
+ * @return void** 指向元素的指针
+ */
+void *cstl_vector_back(Vector *vec)
 {
+    if (vec->size == 0)
+        return NULL;
+    return cstl_vector_at(vec, vec->size - 1);
 }
-State cstl_vector_remove_last(Vector *vec, void **out)
+
+/**
+ * @brief 获取Vector中第一次出现element元素的索引位置
+ *
+ * @param vec
+ * @param element
+ * @return size_t* 指向索引的指针
+ */
+size_t *cstl_vector_index_of(Vector *vec, void *element)
 {
+    size_t *res = NULL;
+    for (size_t i = 0; i < vec->size; ++i)
+    {
+        if (vec->buffer[i] == element)
+        {
+            *res = i;
+            break;
+        }
+    }
+    return res;
 }
-State cstl_vector_remove_all(Vector *vec)
+
+/**
+ * @brief 移除指定元素，并返回
+ *
+ * @param vec
+ * @param element
+ * @return void*
+ */
+void *cstl_vector_remove(Vector *vec, void *element)
 {
+    size_t *index = cstl_vector_index_of(vec, element);
+    if (index == NULL)
+        return NULL;
+    if (*index != vec->size - 1)
+    {
+        size_t block_size = (vec->size - 1 - *index) * sizeof(void *);
+        memmove(&(vec->buffer[*index]), &(vec->buffer[*index + 1]), block_size);
+    }
+    --(vec->size);
+    return element;
 }
-State cstl_vector_remove_all_free(Vector *vec)
+
+/**
+ * @brief 删除指定索引位置处的元素
+ *
+ * @param vec
+ * @param index
+ * @return void*
+ */
+void *cstl_vector_remove_at(Vector *vec, size_t index)
 {
+    if (index >= vec->size)
+        return NULL;
+    void *res = vec->buffer[index];
+    if (index != vec->size - 1)
+    {
+        size_t block_size = (vec->size - 1 - index) * sizeof(void *);
+        memmove(&(vec->buffer[index]), &(vec->buffer[index + 1]), block_size);
+    }
+    --(vec->size);
+    return res;
+}
+
+/**
+ * @brief 删除数组最后一个元素
+ *
+ * @param vec
+ * @return void*
+ */
+void *cstl_vector_pop_back(Vector *vec)
+{
+    return cstl_vector_remove_at(vec, vec->size - 1);
+}
+
+/**
+ * @brief 移除数组中所有元素，该函数不需要删除buffer中的元素和减小capacity
+ *
+ * @param vec
+ * @return State
+ */
+void cstl_vector_remove_all(Vector *vec)
+{
+    vec->size = 0;
+}
+
+/**
+ * @brief 移除数组中所有元素并删除buffer中的元素，但不需要减小capacity
+ *
+ * @param vec
+ */
+void cstl_vector_remove_all_free(Vector *vec)
+{
+    size_t i;
+    for (i = 0; i < vec->size; ++i)
+        vec->mem_free(vec->buffer[i]);
+    cstl_vector_remove_all(vec);
+}
+
+/**
+ * @brief 返回Vector的size
+ *
+ * @param vec
+ * @return size_t
+ */
+size_t cstl_vector_size(Vector *vec)
+{
+    return vec->size;
+}
+
+/**
+ * @brief 返回Vector的capacity
+ *
+ * @param vec
+ * @return size_t
+ */
+size_t cstl_vector_capacity(Vector *vec)
+{
+    return vec->capacity;
 }

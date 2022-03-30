@@ -37,15 +37,23 @@ State cstl_vector_create_helper(const Vector_Hepler *const vh, Vector **out);
 void cstl_vector_destory(Vector *vec);
 void cstl_vector_destory_cb(Vector *vec, void (*cb)(void *));
 
-State cstl_vector_add(Vector *vec, void *element);
-State cstl_vector_add_at(Vector *vec, void *element, size_t index);
+State cstl_vector_push_back(Vector *vec, void *element);
+State cstl_vector_push_at(Vector *vec, void *element, size_t index);
 State cstl_vector_replace_at(Vector *vec, void *element, size_t index, void **out);
 State cstl_vector_swap_at(Vector *vec, size_t index1, size_t idnex2);
 
-State cstl_vector_remove(Vector *vec, void *element, void **out);
-State cstl_vector_remove_at(Vector *vec, size_t index, void **out);
-State cstl_vector_remove_last(Vector *vec, void **out);
-State cstl_vector_remove_all(Vector *vec);
-State cstl_vector_remove_all_free(Vector *vec);
+void *cstl_vector_at(Vector *vec, size_t index);
+void *cstl_vector_back(Vector *vec);
+
+size_t *cstl_vector_index_of(Vector *vec, void *element);
+
+void *cstl_vector_remove(Vector *vec, void *element);
+void *cstl_vector_remove_at(Vector *vec, size_t index);
+void *cstl_vector_pop_back(Vector *vec);
+void cstl_vector_remove_all(Vector *vec);
+void cstl_vector_remove_all_free(Vector *vec);
+
+size_t cstl_vector_size(Vector *vec);
+size_t cstl_vector_capacity(Vector *vec);
 
 #endif
