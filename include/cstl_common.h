@@ -15,7 +15,9 @@ enum cstl_state
     CSTL_ERR_INVALID_CAPACITY = 2,
     CSTL_ERR_MAX_CAPACITY = 3,
     CSTL_ERR_OUT_OF_RANGE = 4,
-    CSTL_ERR_VALUE_NOT_FOUND = 5
+    CSTL_ERR_VALUE_NOT_FOUND = 5,
+    CSTL_ITERATOR_END = 6,
+    CSTL_ITERATOR_NULL = 7
 };
 
 typedef enum cstl_state State;

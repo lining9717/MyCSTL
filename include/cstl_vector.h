@@ -30,6 +30,24 @@ typedef struct cstl_vector_helper
     void (*mem_free)(void *block);
 } Vector_Hepler;
 
+/**
+ * @brief Vector迭代器结构。用于升序遍历Vector中的每个元素。
+ * 也支持通过迭代器增加或删除元素
+ *
+ */
+typedef struct cstl_vector_iterator
+{
+    // 迭代器关联的Vector
+    Vector *vec;
+
+    // 迭代器当前的位置
+    size_t index;
+
+    // 当最后一个元素被删除时设置为true
+    bool last_removed;
+
+} Vector_Iterator;
+
 State cstl_vector_create(Vector **out);
 void cstl_vector_hepler_init(Vector_Hepler *vh);
 State cstl_vector_create_helper(const Vector_Hepler *const vh, Vector **out);
@@ -55,5 +73,14 @@ void cstl_vector_remove_all_free(Vector *vec);
 
 size_t cstl_vector_size(Vector *vec);
 size_t cstl_vector_capacity(Vector *vec);
+
+void cstl_vector_iter_init(Vector_Iterator *iter, Vector *vec);
+State cstl_vector_iter_next(Vector_Iterator *iter, void **out);
+State cstl_vector_iter_remove(Vector_Iterator *iter, void **out);
+State cstl_vector_iter_add(Vector_Iterator *iter, void *element);
+State cstl_vector_iter_replace(Vector_Iterator *iter, void *element, void *out);
+size_t cstl_vector_iter_index(Vector_Iterator *iter);
+State cstl_vector_iterator_reset(Vector_Iterator *iter);
+
 
 #endif

@@ -389,3 +389,108 @@ size_t cstl_vector_capacity(Vector *vec)
 {
     return vec->capacity;
 }
+
+/**
+ * @brief 初始化Vector迭代器
+ *
+ * @param iter 需要被初始化的迭代器
+ * @param vec 迭代器指向的数组
+ */
+void cstl_vector_iter_init(Vector_Iterator *iter, Vector *vec)
+{
+    iter->vec = vec;
+    iter->index = 0;
+    iter->last_removed = false;
+}
+
+/**
+ * @brief 迭代器将当前值存入out并移向下一个元素并将
+ *
+ * @param iter
+ * @param out
+ * @return State CSTL_ITERATOR_END：迭代器到达末尾
+ */
+State cstl_vector_iter_next(Vector_Iterator *iter, void **out)
+{
+    if (iter->index >= iter->vec->size)
+        return CSTL_ITERATOR_END;
+    *out = iter->vec->buffer[iter->index];
+    ++(iter->index);
+    iter->last_removed = false;
+    return CSTL_OK;
+}
+
+/**
+ * @brief 在迭代器前进之后移除元素，只能在cstl_vector_iter_next执行之后使用
+ *
+ * @param iter
+ * @param out
+ * @return State
+ */
+State cstl_vector_iter_remove(Vector_Iterator *iter, void **out)
+{
+    State ret = CSTL_ERR_VALUE_NOT_FOUND;
+    if (!iter->last_removed)
+    {
+        void *out = cstl_vector_remove_at(iter->vec, iter->index - 1);
+        if (out == NULL)
+            ret = CSTL_ERR_OUT_OF_RANGE;
+        else
+        {
+            ret = CSTL_OK;
+            iter->last_removed = true;
+        }
+    }
+    return ret;
+}
+
+/**
+ * @brief 在迭代器当前位置增加一个元素
+ *
+ * @param iter
+ * @param element
+ * @return State
+ */
+State cstl_vector_iter_add(Vector_Iterator *iter, void *element)
+{
+    return cstl_vector_push_at(iter->vec, element, iter->index++);
+}
+
+/**
+ * @brief 替换当前迭代器所值的元素
+ *
+ * @param iter
+ * @param element
+ * @param out
+ * @return State
+ */
+State cstl_vector_iter_replace(Vector_Iterator *iter, void *element, void *out)
+{
+    return cstl_vector_replace_at(iter->vec, element, iter->index - 1, out);
+}
+
+/**
+ * @brief 返回当前迭代器指向元素的索引
+ *
+ * @param iter
+ * @return size_t
+ */
+size_t cstl_vector_iter_index(Vector_Iterator *iter)
+{
+    return iter->index - 1;
+}
+
+/**
+ * @brief 重置迭代器索引
+ *
+ * @param iter 迭代器
+ * @return State 未初始化的迭代器回出错
+ */
+State cstl_vector_iterator_reset(Vector_Iterator *iter)
+{
+    if (iter == NULL)
+        return CSTL_ITERATOR_NULL;
+    iter->index = 0;
+    iter->last_removed = false;
+    return CSTL_OK;
+}
