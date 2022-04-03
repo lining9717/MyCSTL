@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "cstl_vector.h"
+#include "cstl_stack.h"
 
 void testVector()
 {
@@ -69,8 +70,27 @@ void testVector()
     printf("\n");
 }
 
+void testStack()
+{
+    int a = 1, b = 2, c = 3;
+    Stack *stk;
+    cstl_stack_create(&stk);
+
+    cstl_stack_push(stk, &a);
+    cstl_stack_push(stk, &b);
+    cstl_stack_push(stk, &c);
+
+    printf("Stack Size:%5d\n", (int)cstl_stack_size(stk));
+    printf("Stack Pop:%5d\n", *(int*)cstl_stack_pop(stk));
+
+    printf("Stack Pop:%5d\n", *(int*)cstl_stack_pop(stk));
+    printf("Stack Pop:%5d\n", *(int*)cstl_stack_pop(stk));
+    printf("Stack empty:%5d\n", (int)cstl_stack_empty(stk));
+
+}
 int main()
 {
-    testVector();
+    // testVector();
+    testStack();
     return 0;
 }
